@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Q&A",
-  description: "Ask and browse questions",
+  title: "Live Q&A",
+  description: "Ask and upvote questions",
 };
 
 export default function RootLayout({

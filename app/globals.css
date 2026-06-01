@@ -1,16 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  /* Slido-style light theme: soft gray canvas, white cards, vivid blue accent */
-  --background: #f4f5f7;
-  --foreground: #1d1d2c;
+  --background: #ffffff;
+  --foreground: #171717;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-brand: #1264ff;
-  --color-brand-dark: #0b4fe0;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -18,5 +15,4 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
