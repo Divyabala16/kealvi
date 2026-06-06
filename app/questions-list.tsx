@@ -7,6 +7,7 @@ type Question = {
   body: string;
   author: string | null;
   votes: number;
+  image_url?: string | null;
 };
 
 export default function QuestionsList({
@@ -18,6 +19,7 @@ export default function QuestionsList({
 }) {
   const [questions, setQuestions] = useState(initialQuestions);
   const [draft, setDraft] = useState("");
+  const [image, setImage] = useState<File | null>(null);
   const [query, setQuery] = useState("");
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [loading, setLoading] = useState(false);
@@ -41,18 +43,48 @@ export default function QuestionsList({
     return () => clearTimeout(id); // cancel the pending timer on each keystroke
   }, [query]);
 
-  async function submit() {
+  async function submit() 
+  {
     if (!draft.trim()) return;
 
-    const res = await fetch("/api/questions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ body: draft }),
-    });
+    let image_url = null;
+
+    if (image) 
+    {
+      const formData = new FormData();
+      formData.append("file", image);
+
+      const uploadRes = await fetch("/api/upload", 
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+      const uploadData = await uploadRes.json();
+      image_url = uploadData.image_url;
+  }
+
+    const res = await fetch("/api/questions", 
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify
+        (
+          {
+            body: draft,
+            image_url,
+          }
+        ),
+      }
+    );
+
     const created = await res.json();
 
     setQuestions((qs) => [{ ...created, votes: 0 }, ...qs]);
+
     setDraft("");
+    setImage(null);
   }
 
   async function upvote(id: string) {
@@ -97,6 +129,12 @@ export default function QuestionsList({
           placeholder="Ask a question…"
           className="flex-1 rounded-md border px-3 py-2"
         />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+          className="rounded-md border px-3 py-2"
+        />
         <button onClick={submit} className="rounded-md border px-4 py-2">
           Ask
         </button>
@@ -111,18 +149,31 @@ export default function QuestionsList({
 
       <ul className="space-y-3">
         {questions.map((q) => (
-          <li
-            key={q.id}
-            className="flex items-center gap-3 rounded-lg border p-3"
-          >
-            <button
-              onClick={() => upvote(q.id)}
-              className="rounded-md border px-3 py-1 font-mono"
-            >
-              ▲ {q.votes}
-            </button>
-            <span>{q.body}</span>
-          </li>
+        <li
+  key={q.id}
+  className="rounded-lg border p-3"
+>
+  <div className="flex items-start gap-3">
+    <button
+      onClick={() => upvote(q.id)}
+      className="rounded-md border px-3 py-1 font-mono"
+    >
+      ▲ {q.votes}
+    </button>
+
+    <div className="flex-1">
+      <p>{q.body}</p>
+
+      {q.image_url && (
+        <img
+          src={q.image_url}
+          alt="Question image"
+          className="mt-2 max-h-64 rounded-lg"
+        />
+      )}
+    </div>
+  </div>
+</li>
         ))}
       </ul>
 
